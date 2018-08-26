@@ -26,8 +26,10 @@ public class PlayerChat {
         }
 
         JSONObject object = new JSONObject();
+
         object.put("sender", player.get().getName());
         object.put("message", text);
+        object.put("type", "message");
 
         Main.getInstance().getServer().broadcast(object.toString());
     }
