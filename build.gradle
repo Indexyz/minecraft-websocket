@@ -1,0 +1,75 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven { url = "http://files.minecraftforge.net/maven" }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+    }
+}
+plugins {
+    id 'com.github.johnrengelman.shadow' version '2.0.2'
+}
+
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+//Only edit below this line, the above code adds and enables the nessasary things for Forge to be setup.
+
+
+version = "0.0.0"
+group= "io.github.indexyz.minecraft.websocket"
+archivesBaseName = "websocket"
+
+sourceCompatibility = targetCompatibility = "1.8"
+compileJava {
+    sourceCompatibility = targetCompatibility = "1.8"
+}
+
+minecraft {
+    version = "1.10.2-12.18.3.2511"
+    runDir = "run"
+    mappings = "snapshot_20161111"
+    replace "@version@", project.version
+}
+
+
+def deps = [
+    'org.json:json:20171018',
+    'org.java-websocket:Java-WebSocket:1.3.9'
+] as String[]
+
+dependencies {
+    deps.each{
+        compile it
+    }
+}
+
+shadowJar {
+    dependencies {
+        deps.each{
+            include dependency(it)
+        }
+    }
+    classifier = 'full'
+}
+
+build.dependsOn(shadowJar)
+
+processResources
+{
+    // this will ensure that this task is redone when the versions change.
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+reobf { shadowJar { mappingType = 'SEARGE' } }
+tasks.reobfShadowJar.mustRunAfter shadowJar
